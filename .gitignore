@@ -1,0 +1,6 @@
+# Runtime state (regenerable — /review-ui rebuilds any review from git)
+data/*
+!data/.gitkeep
+__pycache__/
+.venv/
+.claude/worktrees/

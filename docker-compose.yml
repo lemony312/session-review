@@ -1,0 +1,29 @@
+name: ${SESSION_REVIEW_CONTAINER:-session-review}
+
+services:
+  session-review:
+    build: .
+    image: session-review:latest
+    container_name: ${SESSION_REVIEW_CONTAINER:-session-review}
+    ports:
+      - "127.0.0.1:${SESSION_REVIEW_PORT:-8087}:8087"
+    volumes:
+      # Mount Claude's config directory (read-only) for JSONL access
+      - ${HOME}/.claude:/claude:ro
+      # Mount repos (read-only) for git diff
+      - ${REPOS_HOST_DIR:-${HOME}/Documents}:/repos:ro
+      # Persist the review database between restarts
+      - ./data:/data
+    environment:
+      - CLAUDE_DIR=/claude
+      - CLAUDE_HOST_DIR=${HOME}/.claude
+      - REPOS_DIR=/repos
+      - REPOS_HOST_DIR=${REPOS_HOST_DIR:-${HOME}/Documents}
+      - DB_PATH=/data/review.db
+      - PIPELINE_IMAGE_REGISTRY_PREFIXES=${PIPELINE_IMAGE_REGISTRY_PREFIXES:-}
+      - DOMAIN_CONTEXT_DIR=${DOMAIN_CONTEXT_DIR:-}
+      - ASK_BRIDGE_URL=${ASK_BRIDGE_URL:-http://host.docker.internal:${ASK_BRIDGE_PORT:-8095}}
+    extra_hosts:
+      # Linux needs this to resolve host.docker.internal; harmless on Docker Desktop
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

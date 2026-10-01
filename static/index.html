@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Review</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Homepage layout */
+        .home-layout {
+            display: flex;
+            height: calc(100vh - 37px);
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            min-width: 240px;
+            border-right: 1px solid var(--border);
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-header h3 { font-size: 13px; font-weight: 600; }
+
+        .sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .sidebar-item {
+            display: block;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--bg-tertiary);
+            cursor: pointer;
+            transition: background 0.1s;
+            text-decoration: none;
+            color: var(--text);
+            position: relative;
+        }
+        .sidebar-item:hover { background: var(--bg-tertiary); text-decoration: none; }
+        .sidebar-item.active { background: var(--bg-tertiary); border-left: 2px solid var(--blue); }
+
+        .sidebar-item-header {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+        .sidebar-item-title {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        .sidebar-item-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .sidebar-item-meta .additions { color: var(--green); }
+        .sidebar-item-meta .deletions { color: var(--red); }
+
+        /* Delete button */
+        .sidebar-delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            color: var(--text-muted);
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.15s;
+        }
+        .sidebar-item:hover .sidebar-delete-btn { opacity: 0.6; }
+        .sidebar-delete-btn:hover {
+            opacity: 1 !important;
+            color: var(--red);
+            border-color: var(--red);
+            background: var(--red-bg);
+        }
+
+        /* Delete confirmation */
+        .sidebar-delete-confirm {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--red-border);
+            border-radius: 0;
+            padding: 6px 12px;
+            z-index: 10;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-delete-confirm.visible { display: flex; }
+        .sidebar-delete-confirm span {
+            font-size: 12px;
+            color: var(--red);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sidebar-delete-confirm .confirm-btn {
+            padding: 2px 10px;
+            font-size: 11px;
+            background: var(--red-bg);
+            border: 1px solid var(--red-border);
+            border-radius: 3px;
+            color: var(--red);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .sidebar-delete-confirm .confirm-btn:hover { background: var(--red); color: #fff; }
+        .sidebar-delete-confirm .cancel-btn {
+            padding: 2px 8px;
+            font-size: 11px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .sidebar-delete-confirm .cancel-btn:hover { background: var(--bg-tertiary); }
+
+        /* Main content */
+        .main-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px;
+        }
+
+        /* Branch list */
+        .branch-section {
+            max-width: 900px;
+        }
+        .branch-section h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .branch-filter {
+            width: 100%;
+            padding: 6px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .branch-filter:focus { outline: none; border-color: var(--blue); }
+
+        /* Repo group */
+        .repo-group {
+            margin-bottom: 16px;
+        }
+        .repo-group-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 0;
+            margin-bottom: 4px;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        /* Branch card */
+        .branch-card {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            background: var(--bg);
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .branch-card:hover { border-color: var(--blue); background: var(--bg-secondary); }
+        .branch-card.selected {
+            border-color: var(--green);
+            background: rgba(35, 134, 54, 0.1);
+        }
+        .branch-card-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .branch-card-name {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .branch-card-badge {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+        .branch-card-badge.sessions {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .branch-card-badge.has-review {
+            background: rgba(35, 134, 54, 0.15);
+            color: var(--green);
+            border: 1px solid var(--green-border);
+        }
+        .branch-card-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Expanded session list within a branch card */
+        .branch-sessions {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--bg-tertiary);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .branch-session-item {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 3px 0;
+            display: flex;
+            gap: 8px;
+        }
+        .branch-session-item .session-id {
+            font-family: 'SF Mono', Consolas, monospace;
+            color: var(--text-muted);
+            min-width: 65px;
+        }
+        .branch-session-item .session-prompt {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Generate controls */
+        .branch-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* Overrides form */
+        .overrides-section {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+        .overrides-toggle {
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 0;
+        }
+        .overrides-toggle .toggle-arrow { font-size: 10px; transition: transform 0.15s; }
+        .overrides-toggle.open .toggle-arrow { transform: rotate(90deg); }
+        .overrides-fields { display: none; margin-top: 8px; }
+        .overrides-toggle.open + .overrides-fields { display: block; }
+
+        /* Loading overlay */
+        .generate-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .generate-overlay.visible { display: flex; }
+        .generate-overlay-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px 32px;
+            text-align: center;
+        }
+        .generate-overlay-card .spinner {
+            display: inline-block;
+            width: 24px; height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: ask-spin 0.6s linear infinite;
+            margin-bottom: 12px;
+        }
+        .generate-overlay-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Empty state */
+        .sidebar-empty, .no-branches {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <h1>Session Review</h1>
+        <span class="subtitle">Annotated AI Diff Viewer</span>
+    </header>
+
+    <div class="home-layout">
+        <!-- Sidebar: Reviews list -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Reviews</h3>
+            </div>
+            <div id="sidebar-list" class="sidebar-list">
+                <p class="sidebar-empty">Loading...</p>
+            </div>
+        </aside>
+
+        <!-- Main: Branch list -->
+        <div class="main-panel">
+            <section class="branch-section">
+                <h2>Active Branches</h2>
+                <input type="text" id="branch-filter" class="branch-filter" placeholder="Filter by repo, branch, or session prompt...">
+                <div id="branch-list"></div>
+
+                <!-- Overrides (collapsed by default) -->
+                <div class="overrides-section">
+                    <div id="overrides-toggle" class="overrides-toggle">
+                        <span class="toggle-arrow">&#9654;</span>
+                        <span>Override settings</span>
+                    </div>
+                    <div id="overrides-fields" class="overrides-fields">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="base-ref">Base Ref</label>
+                                <input type="text" id="base-ref" value="main" placeholder="main">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="branch-actions">
+                    <button id="btn-generate" class="btn btn-primary" disabled>Select a branch to generate</button>
+                    <span id="btn-view-review" style="display:none;">
+                        <a href="#" class="btn btn-secondary" id="btn-view-link">View existing review</a>
+                    </span>
+                </div>
+
+                <div id="generate-status" class="status-msg hidden" style="margin-top: 12px;"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="generate-overlay" class="generate-overlay">
+        <div class="generate-overlay-card">
+            <div class="spinner"></div>
+            <p>Generating review...</p>
+        </div>
+    </div>
+
+    <script>
+        let allBranches = [];
+        let selectedBranch = null;
+
+        // --- Sidebar: Reviews ---
+        async function loadReviews() {
+            const container = document.getElementById('sidebar-list');
+            try {
+                const resp = await fetch('/api/reviews');
+                const data = await resp.json();
+
+                if (!data.reviews || data.reviews.length === 0) {
+                    container.innerHTML = '<p class="sidebar-empty">No reviews yet.<br>Generate one from a branch.</p>';
+                    return;
+                }
+
+                container.innerHTML = data.reviews.map(r => `
+                    <div class="sidebar-item" data-review-id="${r.id}">
+                        <div class="sidebar-item-header">
+                            <span class="badge badge-${r.status}" style="font-size:10px;">${r.status}</span>
+                            <span class="project-badge" style="font-size:11px;">${r.project || 'unknown'}</span>
+                        </div>
+                        <div class="sidebar-item-title">${escapeHtml(r.title || 'Untitled')}</div>
+                        <div class="sidebar-item-meta">
+                            ${r.branch ? `<span style="font-family:monospace;">${escapeHtml(r.branch)}</span>` : ''}
+                            <span>${r.total_files_changed} files</span>
+                            <span class="additions">+${r.total_additions}</span>
+                            <span class="deletions">-${r.total_deletions}</span>
+                            <span>${formatDate(r.session_date || r.generated_at)}</span>
+                        </div>
+                        <button class="sidebar-delete-btn" title="Delete review" onclick="event.stopPropagation(); showDeleteConfirm(${r.id}, this)">&minus;</button>
+                        <div class="sidebar-delete-confirm" id="delete-confirm-${r.id}">
+                            <span>Delete this review?</span>
+                            <button class="confirm-btn" onclick="event.stopPropagation(); deleteReview(${r.id})">Delete</button>
+                            <button class="cancel-btn" onclick="event.stopPropagation(); hideDeleteConfirm(${r.id})">Cancel</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        window.location.href = `/review/${item.dataset.reviewId}`;
+                    });
+                });
+            } catch (e) {
+                container.innerHTML = `<p class="sidebar-empty" style="color:var(--red)">Failed to load: ${e.message}</p>`;
+            }
+        }
+
+        function showDeleteConfirm(reviewId, btn) {
+            document.querySelectorAll('.sidebar-delete-confirm.visible').forEach(el => {
+                el.classList.remove('visible');
+            });
+            document.getElementById(`delete-confirm-${reviewId}`).classList.add('visible');
+        }
+
+        function hideDeleteConfirm(reviewId) {
+            document.getElementById(`delete-confirm-${reviewId}`).classList.remove('visible');
+        }
+
+        async function deleteReview(reviewId) {
+            try {
+                await fetch(`/api/reviews/${reviewId}`, { method: 'DELETE' });
+                loadReviews();
+            } catch (e) {
+                alert('Failed to delete: ' + e.message);
+            }
+        }
+
+        // --- Branch list ---
+        async function loadBranches() {
+            const container = document.getElementById('branch-list');
+            try {
+                const resp = await fetch('/api/branches');
+                const data = await resp.json();
+
+                if (!data.branches || data.branches.length === 0) {
+                    container.innerHTML = '<p class="no-branches">No branches with sessions found.</p>';
+                    return;
+                }
+
+                allBranches = data.branches;
+                renderBranches(allBranches);
+            } catch (e) {
+                container.innerHTML = `<p class="no-branches" style="color:var(--red)">Failed to load branches: ${e.message}</p>`;
+            }
+        }
+
+        function renderBranches(branches) {
+            const container = document.getElementById('branch-list');
+            if (branches.length === 0) {
+                container.innerHTML = '<p class="no-branches">No matching branches.</p>';
+                return;
+            }
+
+            // Group by repo
+            const byRepo = {};
+            for (const b of branches) {
+                if (!byRepo[b.repo_name]) byRepo[b.repo_name] = [];
+                byRepo[b.repo_name].push(b);
+            }
+
+            let html = '';
+            for (const [repo, repoBranches] of Object.entries(byRepo)) {
+                html += `<div class="repo-group">`;
+                html += `<div class="repo-group-header">${escapeHtml(repo)}</div>`;
+                for (const b of repoBranches) {
+                    const isSelected = selectedBranch && selectedBranch.key === b.key;
+                    html += `
+                        <div class="branch-card ${isSelected ? 'selected' : ''}" data-key="${escapeHtml(b.key)}">
+                            <div class="branch-card-top">
+                                <span class="branch-card-name">${escapeHtml(b.branch)}</span>
+                                <span class="branch-card-badge sessions">${b.session_count} session${b.session_count !== 1 ? 's' : ''}</span>
+                                ${b.has_review ? '<span class="branch-card-badge has-review">has review</span>' : ''}
+                            </div>
+                            <div class="branch-card-meta">
+                                <span>Latest: ${formatDate(b.latest_mtime)}</span>
+                                ${b.sessions.length > 0 && b.sessions[0].first_prompt ? `<span>${escapeHtml(b.sessions[0].first_prompt.substring(0, 80))}${b.sessions[0].first_prompt.length > 80 ? '...' : ''}</span>` : ''}
+                            </div>
+                            ${isSelected ? renderSessionList(b.sessions) : ''}
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+
+            container.querySelectorAll('.branch-card').forEach(card => {
+                card.addEventListener('click', () => selectBranch(card.dataset.key));
+            });
+        }
+
+        function renderSessionList(sessions) {
+            if (!sessions || sessions.length === 0) return '';
+            let html = '<div class="branch-sessions">';
+            for (const s of sessions) {
+                html += `
+                    <div class="branch-session-item">
+                        <span class="session-id">${escapeHtml(s.session_id.substring(0, 8))}</span>
+                        <span class="session-prompt">${escapeHtml(s.first_prompt || '(no prompt)')}</span>
+                        <span>${formatDate(s.mtime)}</span>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function selectBranch(key) {
+            selectedBranch = allBranches.find(b => b.key === key) || null;
+            renderBranches(getFilteredBranches());
+
+            const btn = document.getElementById('btn-generate');
+            const viewBtn = document.getElementById('btn-view-review');
+            const viewLink = document.getElementById('btn-view-link');
+
+            if (selectedBranch) {
+                btn.disabled = false;
+                btn.textContent = selectedBranch.has_review ? 'Refresh Review' : 'Generate Review';
+
+                if (selectedBranch.has_review && selectedBranch.review_id) {
+                    viewBtn.style.display = '';
+                    viewLink.href = `/review/${selectedBranch.review_id}`;
+                } else {
+                    viewBtn.style.display = 'none';
+                }
+            } else {
+                btn.disabled = true;
+                btn.textContent = 'Select a branch to generate';
+                viewBtn.style.display = 'none';
+            }
+        }
+
+        function getFilteredBranches() {
+            const q = document.getElementById('branch-filter').value.toLowerCase().trim();
+            if (!q) return allBranches;
+            return allBranches.filter(b =>
+                b.repo_name.toLowerCase().includes(q) ||
+                b.branch.toLowerCase().includes(q) ||
+                b.key.toLowerCase().includes(q) ||
+                b.sessions.some(s => (s.first_prompt || '').toLowerCase().includes(q))
+            );
+        }
+
+        // Filter
+        document.getElementById('branch-filter').addEventListener('input', () => {
+            renderBranches(getFilteredBranches());
+        });
+
+        // Overrides toggle
+        document.getElementById('overrides-toggle').addEventListener('click', () => {
+            document.getElementById('overrides-toggle').classList.toggle('open');
+        });
+
+        // Generate
+        document.getElementById('btn-generate').addEventListener('click', async () => {
+            if (!selectedBranch) return;
+
+            const overlay = document.getElementById('generate-overlay');
+            overlay.classList.add('visible');
+
+            const statusEl = document.getElementById('generate-status');
+            statusEl.classList.add('hidden');
+
+            const baseRef = document.getElementById('base-ref').value.trim() || 'main';
+            const sessionIds = selectedBranch.sessions.map(s => s.session_id).join(',');
+
+            const params = new URLSearchParams({
+                repo_path: selectedBranch.repo_path,
+                branch: selectedBranch.branch,
+                base_ref: baseRef,
+            });
+            if (sessionIds) params.set('session_ids', sessionIds);
+
+            try {
+                const resp = await fetch(`/api/reviews/generate-branch?${params}`, { method: 'POST' });
+                const data = await resp.json();
+                overlay.classList.remove('visible');
+
+                if (resp.ok) {
+                    window.location.href = `/review/${data.review_id}`;
+                } else {
+                    statusEl.classList.remove('hidden');
+                    statusEl.className = 'status-msg error';
+                    statusEl.textContent = `Error: ${data.detail}`;
+                }
+            } catch (e) {
+                overlay.classList.remove('visible');
+                statusEl.classList.remove('hidden');
+                statusEl.className = 'status-msg error';
+                statusEl.textContent = `Error: ${e.message}`;
+            }
+        });
+
+        // --- Helpers ---
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const d = typeof dateStr === 'number' ? new Date(dateStr * 1000) : new Date(dateStr);
+                const now = new Date();
+                const diff = now - d;
+                if (diff < 86400000) {
+                    const hours = Math.floor(diff / 3600000);
+                    if (hours < 1) return 'just now';
+                    return `${hours}h ago`;
+                }
+                if (diff < 604800000) {
+                    const days = Math.floor(diff / 86400000);
+                    return `${days}d ago`;
+                }
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            } catch { return String(dateStr); }
+        }
+
+        // --- Init ---
+        loadBranches();
+        loadReviews();
+    </script>
+</body>
+</html>

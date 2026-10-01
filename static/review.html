@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=22">
+</head>
+<body>
+    <header class="top-bar">
+        <a href="/" class="back-link">&larr; All Reviews</a>
+        <h1 id="review-title">Session Review</h1>
+    </header>
+
+    <div id="review-header" class="review-header">
+        <div class="review-meta" id="review-meta"></div>
+        <div class="review-summary" id="review-summary"></div>
+    </div>
+
+    <div id="main-content" class="main-content">
+        <aside id="file-tree" class="file-tree">
+            <div class="file-tree-header">
+                <h3>Files</h3>
+                <span id="file-count" class="file-count"></span>
+            </div>
+            <div id="file-list"></div>
+        </aside>
+
+        <div id="diff-container" class="diff-container">
+            <div id="general-annotations" class="general-annotations hidden"></div>
+        </div>
+    </div>
+
+    <script src="/static/vendor/marked.min.js"></script>
+    <script src="/static/js/markdown-diff.js?v=22"></script>
+    <script src="/static/js/pipeline-diff.js?v=22"></script>
+    <script src="/static/js/split-diff.js?v=22"></script>
+    <script src="/static/js/review.js?v=24"></script>
+</body>
+</html>
