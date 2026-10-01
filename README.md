@@ -6,14 +6,14 @@ A local GitHub-style diff viewer for your branches and pull requests, with rende
 
 In Claude Code, from a repo under `~/Documents`:
 
-```
-/review-ui                                                   # current branch vs the default branch
-/review-ui https://github.com/acme/app/pull/42  # a pull request, by link
-/review-ui 42                                        # a pull request of the current repo
-/review-ui feature-xyz                                       # another branch
-/review-ui --base develop                                    # a different base
-/review-ui feature-a..feature-b                              # two branches (base..changes)
-```
+| Command | Reviews |
+|---|---|
+| `/review-ui` | the current branch vs the default branch |
+| `/review-ui https://github.com/acme/app/pull/42` | a pull request, by link |
+| `/review-ui 42` | a pull request of the current repo |
+| `/review-ui feature-xyz` | another branch |
+| `/review-ui --base develop` | the current branch vs a different base |
+| `/review-ui feature-a..feature-b` | the changes in `feature-b` since `feature-a` |
 
 Or just ask: "show me the review of PR 42".
 
@@ -34,7 +34,7 @@ Then start a new Claude Code session; `/review-ui` appears when you type `/`.
 
 ## Spinnaker pipelines
 
-![A pipeline review: the changed stage in the graph, then its embedded shell diff](docs/demo.gif)
+![/review-ui opens the pipeline review, with the changed stage in the graph and its embedded shell diff](docs/demo.gif)
 
 This change edits a shell script embedded in a pipeline. Git sees one line of escaped JSON (**+1 −1**):
 
@@ -47,6 +47,8 @@ This change edits a shell script embedded in a pipeline. Git sees one line of es
 ## Code views
 
 Markdown renders as markdown with changed words highlighted; code shows **Inline** (default) with the same highlighting. **Split** and **Traditional** are one click away.
+
+![/review-ui opens a branch with markdown docs and Python code, in the Inline view with Claude's notes](docs/markdown-code.gif)
 
 ## Configuration
 
