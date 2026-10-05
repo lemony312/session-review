@@ -116,6 +116,8 @@ node test_pipeline_render.js          # rendered HTML shows the embedded shell (
 node test_markdown_diff.js            # rendered-markdown diff (self-contained)
 node test_split_diff.js               # split diff row alignment + HTML (self-contained)
 node test_inline_expand.js            # Inline/Traditional "Show N more lines" ranges (self-contained)
+node test_scroll_to_change.js         # rendered markdown opens at its first change (offset logic, self-contained)
+uv run --with playwright python test_scroll_to_change.py [BASE_URL]  # same, in a real browser against a running server (mocked review)
 ```
 
 `test_pipeline_diff.py` and `test_pipeline_render.js` run against synthetic before/after pairs in `tests/fixtures/pipelines/` (`<case>.old.pp` / `<case>.new.pp`): embedded shell edits, image/env changes, stages added and removed, a trigger added, a templated-pipeline version bump and a CronJob under `manifests[]`. No git clones or network are needed. To add a case, drop a new pair there and assert on it.

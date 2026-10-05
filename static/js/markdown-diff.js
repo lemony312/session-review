@@ -158,5 +158,15 @@
     return html;
   }
 
-  window.MarkdownDiff = { reconstructOld, render };
+  // Scroll offset that puts the container's first changed block near its top, with
+  // `pad` px of context above; null when nothing is marked (e.g. a brand-new file).
+  function firstChangeOffset(container, pad) {
+    const first = container.querySelector('.md-added, .md-removed, .md-modified');
+    if (!first) return null;
+    const p = pad == null ? 48 : pad;
+    const y = first.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+    return Math.max(0, Math.round(y - p));
+  }
+
+  window.MarkdownDiff = { reconstructOld, render, firstChangeOffset };
 })();

@@ -475,6 +475,9 @@
 
     // Show the right container per file (restores split from localStorage, sets per-file active states)
     document.querySelectorAll('.file-diff[data-file-id]').forEach(fd => showDiffContainer(fd.dataset.fileId));
+
+    // Rendered markdown opens at its first change (layout is final now, so offsets are real)
+    document.querySelectorAll('.markdown-rendered-container').forEach(scrollMarkdownToChange);
   }
 
   // Wire the interactive bits of every diff table under root (annotations, expand, ask, whitespace hunks)
@@ -571,9 +574,26 @@
     if (!markdownContainer) return;
 
     const isShowingMarkdown = markdownContainer.style.display !== 'none';
+    // display:none resets scrollTop, so remember where the reader was
+    if (isShowingMarkdown) markdownContainer.dataset.savedScroll = markdownContainer.scrollTop;
     markdownContainer.style.display = isShowingMarkdown ? 'none' : 'block';
     buttonElement.textContent = isShowingMarkdown ? 'View Rendered' : 'View Diff';
     showDiffContainer(fileId);
+    if (!isShowingMarkdown) scrollMarkdownToChange(markdownContainer);
+  }
+
+  // The rendered markdown is the one per-file scroll box (max-height, shows the whole
+  // file). Open it at the first edit so the change is visible; restore the reader's own
+  // position if they had scrolled before hiding it.
+  function scrollMarkdownToChange(container) {
+    if (!container || container.style.display === 'none') return;
+    const saved = container.dataset.savedScroll;
+    if (saved !== undefined && Number(saved) > 0) {
+      container.scrollTop = Number(saved);
+      return;
+    }
+    const y = window.MarkdownDiff.firstChangeOffset(container);
+    if (y !== null) container.scrollTop = y;
   }
 
   // ---- Diff mode switching ----
