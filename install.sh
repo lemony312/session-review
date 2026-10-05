@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install the /review-ui Claude Code command and start the session-review server.
+# Manual install (no plugin): link the review-ui skill into ~/.claude/skills and start the server.
+# Prefer the plugin route; see README.
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-COMMANDS_DIR="$HOME/.claude/commands"
+SKILLS_DIR="$HOME/.claude/skills"
 
-mkdir -p "$COMMANDS_DIR"
-ln -sf "$REPO_DIR/commands/review-ui.md" "$COMMANDS_DIR/review-ui.md"
-echo "Linked $COMMANDS_DIR/review-ui.md -> $REPO_DIR/commands/review-ui.md"
+mkdir -p "$SKILLS_DIR"
+ln -sfn "$REPO_DIR/skills/review-ui" "$SKILLS_DIR/review-ui"
+echo "Linked $SKILLS_DIR/review-ui -> $REPO_DIR/skills/review-ui"
+
+# Older installs linked commands/review-ui.md, which no longer exists.
+OLD="$HOME/.claude/commands/review-ui.md"
+if [[ -L "$OLD" && "$(readlink "$OLD")" == "$REPO_DIR/commands/review-ui.md" ]]; then
+    rm "$OLD"
+    echo "Removed stale $OLD"
+fi
 
 if [[ "$REPO_DIR" != "$HOME/Documents/session-review" ]]; then
     echo ""

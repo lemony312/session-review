@@ -1,0 +1,12 @@
+{
+  "name": "session-review",
+  "description": "Session Review: a local GitHub-style diff viewer for branches and pull requests.",
+  "owner": { "name": "Louis" },
+  "plugins": [
+    {
+      "name": "session-review",
+      "source": "./",
+      "description": "GitHub-style review of a branch or pull request in a local diff viewer, with Claude's session notes and an Ask box."
+    }
+  ]
+}

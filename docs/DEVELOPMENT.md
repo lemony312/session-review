@@ -1,6 +1,6 @@
 # Development
 
-`install.sh` symlinks `commands/review-ui.md` into `~/.claude/commands/` and starts the server on `http://localhost:8087` (override with `SESSION_REVIEW_PORT`). If you clone somewhere other than `~/Documents/session-review`, set `SESSION_REVIEW_HOME` to the clone path so the command can find the health script.
+The skill lives in `skills/review-ui/SKILL.md`, shared by the plugin (`.claude-plugin/`) and `install.sh`, which symlinks it into `~/.claude/skills/` and starts the server on `http://localhost:8087` (override with `SESSION_REVIEW_PORT`). If you clone somewhere other than `~/Documents/session-review`, set `SESSION_REVIEW_HOME` to the clone path so the skill can find the health script. As a plugin it uses `${CLAUDE_PLUGIN_ROOT}` instead. Test a plugin change with `claude plugin validate .`.
 
 ## Configuration
 
@@ -17,7 +17,7 @@ Environment variables. "Host" variables are read by `scripts/session-review-heal
 |----------|---------|---------|--------------|
 | `REPOS_HOST_DIR` | host (health script, compose, bridge); container (path mapping) | `~/Documents` | Host directory holding the repos. Mounted at `/repos`; also the only tree the bridge will run the agent in. Restart the bridge after changing it. |
 | `REPOS_DIR` | container | `/repos` | Where the repos are mounted inside the container. |
-| `SESSION_REVIEW_HOME` | `/review-ui` command, `install.sh` | `~/Documents/session-review` | Clone location, used to find `scripts/session-review-health.sh`. |
+| `SESSION_REVIEW_HOME` | `review-ui` skill (non-plugin), `install.sh` | `~/Documents/session-review` | Clone location, used to find `scripts/session-review-health.sh`. |
 | `ASK_AGENT` | bridge | `claude` | Agent preset: `claude` or `kiro`. See [Ask with other agents](#ask-with-other-agents). |
 | `ASK_AGENT_CMD` | bridge | unset | Any other agent CLI, as a shell-words string (never run through a shell). Overrides `ASK_AGENT`. |
 | `ASK_AGENT_NAME` | bridge | preset name, or basename of the custom binary | Display name in the UI ("Ask <name>"). |
@@ -32,6 +32,7 @@ Environment variables. "Host" variables are read by `scripts/session-review-heal
 | `CLAUDE_DIR` | container | `/claude` | Where `~/.claude` is mounted; session transcripts are read from it. |
 | `CLAUDE_HOST_DIR` | container | `~/.claude` | Host path of the same directory, for display and path mapping. |
 | `XDG_STATE_HOME` | health script (Linux) | `~/.local/state` | Base for the bridge log directory. |
+| `SESSION_REVIEW_DATA` | compose, health script | `./data` in a clone, else `~/.local/share/session-review` | Where the review DB and bridge pid live. Outside the plugin cache so plugin updates keep it. |
 | `SESSION_REVIEW_PORT` | compose, health script, `/review-ui` | `8087` | Host port for the server, bound to `127.0.0.1` only (not reachable from the network). The container always listens on 8087 internally. |
 | `SESSION_REVIEW_CONTAINER` | compose, health script | `session-review` | Container name and compose project name. Use a different value with a different port to run a second stack. |
 

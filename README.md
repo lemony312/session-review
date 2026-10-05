@@ -23,14 +23,21 @@ Git worktrees work too, including Claude Code's `.claude/worktrees/`.
 
 Requires Docker, Claude Code, python3 and curl. PR links need `gh` logged in to that host.
 
+```
+/plugin marketplace add lemony312/session-review
+/plugin install session-review@session-review
+```
+
+Then restart Claude Code. As a plugin the command is namespaced: type `/session-review:review-ui` (or `/review-ui` if nothing else uses that name). Asking "show me the review of …" also triggers it. The review database lives in `~/.local/share/session-review`, so it survives plugin updates.
+
+Alternatively, clone and link the skill into `~/.claude/skills/` so it is plain `/review-ui`:
+
 ```bash
 git clone https://github.com/lemony312/session-review.git ~/Documents/session-review
 ~/Documents/session-review/install.sh
 ```
 
-Then start a new Claude Code session; `/review-ui` appears when you type `/`.
-
-`install.sh` links the command into `~/.claude/commands/`. `/review-ui` starts the server (http://localhost:8087) itself whenever it is down.
+Either way the skill starts the server (http://localhost:8087) itself whenever it is down.
 
 ## Spinnaker pipelines
 

@@ -19,7 +19,19 @@ export REPOS_HOST_DIR="${REPOS_HOST_DIR:-$HOME/Documents}"
 # Host bridge that lets the container use the host's agent CLI (Ask; claude by default, see ASK_AGENT)
 BRIDGE_PORT="${ASK_BRIDGE_PORT:-8095}"
 export ASK_BRIDGE_PORT="$BRIDGE_PORT"  # compose derives the container's ASK_BRIDGE_URL from it
-BRIDGE_PID="$PROJECT_DIR/data/ask-bridge.pid"
+
+# Persistent state (review DB, bridge pid). A git clone keeps it in ./data; an installed
+# plugin lives in a cache dir that is replaced on update, so it uses a stable XDG path.
+# SESSION_REVIEW_DATA overrides both.
+if [ -z "${SESSION_REVIEW_DATA:-}" ]; then
+    if [ -d "$PROJECT_DIR/.git" ]; then
+        SESSION_REVIEW_DATA="$PROJECT_DIR/data"
+    else
+        SESSION_REVIEW_DATA="${XDG_DATA_HOME:-$HOME/.local/share}/session-review"
+    fi
+fi
+export SESSION_REVIEW_DATA  # compose mounts it at /data
+BRIDGE_PID="$SESSION_REVIEW_DATA/ask-bridge.pid"
 
 # Bind address: loopback on macOS (Docker Desktop forwards host.docker.internal there).
 # On Linux, host.docker.internal is host-gateway = the docker0 gateway, so bind exactly that
@@ -63,7 +75,7 @@ bridge_up() {
 
 start_bridge() {
     if bridge_up; then return 0; fi
-    mkdir -p "$PROJECT_DIR/data" "$(dirname "$BRIDGE_LOG")"
+    mkdir -p "$SESSION_REVIEW_DATA" "$(dirname "$BRIDGE_LOG")"
     ASK_BRIDGE_PORT="$BRIDGE_PORT" ASK_BRIDGE_HOST="$ASK_BRIDGE_HOST" nohup python3 "$PROJECT_DIR/scripts/ask-bridge.py" >> "$BRIDGE_LOG" 2>&1 &
     echo $! > "$BRIDGE_PID"
     for i in $(seq 1 10); do bridge_up && { echo "ask-bridge listening on $BRIDGE_URL"; return 0; }; sleep 0.5; done

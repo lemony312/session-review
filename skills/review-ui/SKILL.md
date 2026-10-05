@@ -1,11 +1,12 @@
 ---
+name: review-ui
 description: Open a branch or pull request in the session-review diff viewer (localhost:8087). Use when the user says "show me the review of …", "review this branch/PR", "open the review", or pastes a PR link asking to review it.
 argument-hint: "[PR url | PR number | branch | base..branch] [--base <ref>]"
 ---
 
 Open a GitHub-style review of a branch or pull request at `http://localhost:${SESSION_REVIEW_PORT:-8087}` (below: `$URL`).
 
-1. **Start the server**: run `"${SESSION_REVIEW_HOME:-$HOME/Documents/session-review}/scripts/session-review-health.sh"`. It is idempotent and starts the server and Ask bridge if they are down.
+1. **Start the server**: run `"${CLAUDE_PLUGIN_ROOT}/scripts/session-review-health.sh"`. If that path is empty or does not exist (not installed as a plugin), run `"${SESSION_REVIEW_HOME:-$HOME/Documents/session-review}/scripts/session-review-health.sh"` instead. It is idempotent and starts the server and Ask bridge if they are down.
 
 2. **Pick repo, branch and base** from $ARGUMENTS:
 

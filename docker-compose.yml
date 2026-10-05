@@ -13,7 +13,7 @@ services:
       # Mount repos (read-only) for git diff
       - ${REPOS_HOST_DIR:-${HOME}/Documents}:/repos:ro
       # Persist the review database between restarts
-      - ./data:/data
+      - ${SESSION_REVIEW_DATA:-./data}:/data
     environment:
       - CLAUDE_DIR=/claude
       - CLAUDE_HOST_DIR=${HOME}/.claude

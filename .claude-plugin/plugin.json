@@ -1,0 +1,8 @@
+{
+  "name": "session-review",
+  "version": "0.1.0",
+  "description": "GitHub-style review of a branch or pull request in a local diff viewer, with Claude's session notes and an Ask box.",
+  "author": { "name": "Louis" },
+  "homepage": "https://github.com/lemony312/session-review",
+  "repository": "https://github.com/lemony312/session-review"
+}
