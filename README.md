@@ -19,6 +19,8 @@ Or just ask: "show me the review of PR 42".
 
 Git worktrees work too, including Claude Code's `.claude/worktrees/`.
 
+On macOS with Brave, Chrome or Edge as the default browser (and already running), the review reuses its open tab, or opens next to tabs for the same repo, branch or ticket; say a window's name ("open it in my Reviews window") to target it. The first run asks for Automation permission. Other browsers just open the page.
+
 ## Install
 
 Requires Docker, Claude Code, python3 and curl. PR links need `gh` logged in to that host.
