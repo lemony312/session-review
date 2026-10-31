@@ -112,6 +112,7 @@ uv run python test_ask_bridge.py      # ask-bridge agents/presets, path mapping,
 uv run python test_review_generator.py  # repo-path resolution (clones/worktrees), worktree diffs, annotation path normalisation
 uv run python test_annotation_determinism.py  # note placement doesn't depend on PYTHONHASHSEED
 uv run python test_jsonl_parser.py    # every assistant record (after tool calls too) reaches a turn
+uv run python test_open_review.py     # default-browser detection and tab/window choice for opening a review
 node test_pipeline_render.js          # rendered HTML shows the embedded shell (synthetic fixtures)
 node test_markdown_diff.js            # rendered-markdown diff (self-contained)
 node test_split_diff.js               # split diff row alignment + HTML (self-contained)

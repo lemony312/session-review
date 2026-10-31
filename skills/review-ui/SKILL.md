@@ -37,6 +37,6 @@ Open a GitHub-style review of a branch or pull request at `http://localhost:${SE
    ```
    Expect `{"review_id": <id>, "status": "generated"|"unchanged"}`; otherwise report `detail`.
 
-5. **Open**: `open "$URL/review/<review_id>"`.
+5. **Open**: `python3 "<SCRIPTS>/open-review.py" "$URL/review/<review_id>" --near "<HINTS>"`, where `<SCRIPTS>` is the `scripts/` directory used in step 1. Add `--window "<name>"` if the user names a browser window. `<HINTS>` is comma-separated: the repo folder name, the origin repo name (`owner/repo` → `repo`), the branch without `origin/`, and any ticket key in the branch (`[A-Z]+-[0-9]+`, e.g. `PROJ-123`); for example `my-app,app,feature/PROJ-123-fix,PROJ-123`. It reuses an open tab of the review or opens one next to related tabs, and otherwise opens the default browser. Relay its one-line output.
 
 6. **Report** in 2–3 lines: the URL, `<branch> vs <base>`, and the file count (`curl -s $URL/api/reviews/<id>` → `.review.total_files_changed`). Re-running refreshes it. Stick to facts about the diff.
